@@ -70,7 +70,7 @@ class StructuredEventLogger
 
     hash = hash.merge(context)
     hash.update(event: event, scope: scope, timestamp: Time.now.utc)
-    json_io.puts(MultiJson.encode(hash))
+    json_io.write("#{MultiJson.encode(hash)}\n")
   end
 
   def thread_key
