@@ -3,7 +3,7 @@ require 'active_support/json/encoding'
 
 class StructuredEventLogger
   
-  attr_reader :unstructured_logger, :json_logger, :context
+  attr_reader :json_logger, :unstructured_logger, :context
 
   def initialize(json_logger, unstructured_logger = nil)
     @json_logger, @unstructured_logger = json_logger, unstructured_logger

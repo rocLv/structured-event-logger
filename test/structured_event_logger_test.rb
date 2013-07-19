@@ -3,10 +3,9 @@ require 'stringio'
 
 class StructuredEventLoggerTest < Minitest::Test
   def setup
-    @buffered_logger = Logger.new(StringIO.new)
     @json_logger     = Logger.new(StringIO.new)
-
-    @event_logger = StructuredEventLogger.new(@buffered_logger, @json_logger)
+    @buffered_logger = Logger.new(StringIO.new)
+    @event_logger    = StructuredEventLogger.new(@json_logger, @buffered_logger)
   end
 
   def test_should_log_msg_to_buffered_logger
@@ -29,7 +28,6 @@ class StructuredEventLoggerTest < Minitest::Test
     Timecop.travel(Time.now) do
       @buffered_logger.expects(:add).with(nil, "[Event Logger] scope=render, event=error, status=status, message_first=first, message_second=second")
       @json_logger.expects(:add).with(nil, "{\"scope\":\"render\",\"event\":\"error\",\"status\":\"status\",\"message_first\":\"first\",\"message_second\":\"second\",\"timestamp\":\"#{Time.now.utc.strftime('%FT%TZ')}\"}")
-
       @event_logger.event "render", "error", {:status => "status", :message => {:first => "first", :second => "second"}}
     end
   end
