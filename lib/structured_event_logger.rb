@@ -11,10 +11,10 @@ class StructuredEventLogger
   CYAN    = "\e[36m"
   WHITE   = "\e[37m"
 
-  attr_reader :json_logger, :unstructured_logger, :colorize_logging
+  attr_reader :json_io, :unstructured_logger, :colorize_logging
 
-  def initialize(json_logger, unstructured_logger = nil)
-    @json_logger, @unstructured_logger = json_logger, unstructured_logger
+  def initialize(json_io, unstructured_logger = nil)
+    @json_io, @unstructured_logger = json_io, unstructured_logger
     @thread_contexts = {}
     @colorize_logging = ActiveSupport::LogSubscriber.colorize_logging
   end
@@ -70,7 +70,7 @@ class StructuredEventLogger
 
     hash = hash.merge(context)
     hash.update(event: event, scope: scope, timestamp: Time.now.utc)
-    json_logger.add(nil, MultiJson.encode(hash))
+    json_io.puts(MultiJson.encode(hash))
   end
 
   def thread_key

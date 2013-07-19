@@ -6,9 +6,9 @@ require 'active_support/core_ext/logger'
 class StructuredEventLoggerTest < Minitest::Test
   def setup
     ActiveSupport::LogSubscriber.colorize_logging = false
-    @json_logger     = Logger.new(@json_io = StringIO.new)
+    @json_io         = StringIO.new
     @buffered_logger = Logger.new(@nonstructured_io = StringIO.new)
-    @event_logger    = StructuredEventLogger.new(@json_logger, @buffered_logger)
+    @event_logger    = StructuredEventLogger.new(@json_io, @buffered_logger)
     @time = Time.parse('2012-01-01')
   end
 
