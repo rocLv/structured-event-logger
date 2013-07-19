@@ -19,12 +19,22 @@ Or install it yourself as:
 ## Usage
 
     # Creating an instance
-    human_readable_logger = Rails.logger
     json_logger = Logger.new('events.log')
-    event_logger = StructuredEventLogger.new(human_readable_logger, json_logger)
+    human_readable_logger = Rails.logger
+    event_logger = StructuredEventLogger.new(json_logger, human_readable_logger)
 
-    # Usage
-    event_logger.event('scope', event)
+    # Basic usage
+    event_logger.event('scope', event, field: 'value', other_field, 'other value')
+
+    # Add context per thread/request (e.g. in an around_filter)
+    around_filter do
+      event_logger.add_context(my_value: 'whatever')
+      yield
+      event_logger.delete_context  
+    end
+    
+    # later, while processing a request inside that filter
+    event_logger.event('scope', 'event', other_value: 'blah') # will also include { my_value: 'whatever' }
   
 ## Contributing
 
