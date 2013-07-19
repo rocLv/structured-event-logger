@@ -3,11 +3,11 @@ require 'active_support/json'
 
 class StructuredEventLogger
   
-  attr_reader :json_logger, :unstructured_logger, :context
+  attr_reader :json_logger, :unstructured_logger
 
   def initialize(json_logger, unstructured_logger = nil)
     @json_logger, @unstructured_logger = json_logger, unstructured_logger
-    @context = {}
+    @thread_contexts = {}
   end
 
   def log(msg = nil)
@@ -18,13 +18,8 @@ class StructuredEventLogger
     log_event({:scope => scope, :event => event}.merge(flatten_hash(content)))
   end
 
-  def add_context(added_context)
-    context[thread_key] ||= {}
-    context[thread_key] = context[thread_key].merge(added_context)
-  end
-
-  def delete_context
-    context.delete(thread_key)
+  def context
+    @thread_contexts[thread_key] ||= {}
   end
 
   private
@@ -57,7 +52,7 @@ class StructuredEventLogger
 
   def log_event(hash)
     unstructured_logger.add(nil, format_hash(hash)) if unstructured_logger
-    hash = hash.merge(context[thread_key]) if context[thread_key]
+    hash = hash.merge(context)
     hash[:timestamp] ||= Time.now.utc
     json_logger.add(nil, ActiveSupport::JSON.encode(hash))
   end

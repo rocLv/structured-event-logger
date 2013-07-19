@@ -37,10 +37,10 @@ class StructuredEventLoggerTest < Minitest::Test
       @json_logger.expects(:add).with(nil, "{\"scope\":\"render\",\"event\":\"error\",\"request_id\":\"2\",\"timestamp\":\"#{Time.now.utc.strftime('%FT%TZ')}\"}")
       
       Thread.new do 
-        @event_logger.add_context(:request_id => "1")
+        @event_logger.context[:request_id] = '1'
 
         Thread.new do 
-          @event_logger.add_context(:request_id => "2")
+          @event_logger.context[:request_id] = '2'
           @event_logger.event :render, :error
         end.join
       end.join
@@ -55,9 +55,9 @@ class StructuredEventLoggerTest < Minitest::Test
       @json_logger.expects(:add).with(nil, "{\"scope\":\"render\",\"event\":\"error\",\"timestamp\":\"#{Time.now.utc.strftime('%FT%TZ')}\"}").in_sequence(order)
       
       Thread.new do 
-        @event_logger.add_context(:request_id => "1")
+        @event_logger.context[:request_id] = '1'
         @event_logger.event :render, :error
-        @event_logger.delete_context
+        @event_logger.context.clear
       end.join
 
       @event_logger.event :render, :error
