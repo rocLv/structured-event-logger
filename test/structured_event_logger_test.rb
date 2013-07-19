@@ -1,14 +1,14 @@
 require 'test_helper'
 require 'stringio'
-require 'time'
-require 'active_support/core_ext/logger'
 
 class StructuredEventLoggerTest < Minitest::Test
   def setup
     ActiveSupport::LogSubscriber.colorize_logging = false
-    @json_io         = StringIO.new
-    @buffered_logger = Logger.new(@nonstructured_io = StringIO.new)
-    @event_logger    = StructuredEventLogger.new(@json_io, @buffered_logger)
+
+    @json_io = StringIO.new
+    @unstructured_logger = Logger.new(@nonstructured_io = StringIO.new)
+    @unstructured_logger.formatter = proc { |_, _, _, msg| "#{msg}\n" }
+    @event_logger = StructuredEventLogger.new(@json_io, @unstructured_logger)
     @time = Time.parse('2012-01-01')
   end
 
