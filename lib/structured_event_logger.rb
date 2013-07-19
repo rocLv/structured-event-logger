@@ -54,7 +54,7 @@ class StructuredEventLogger
     unstructured_logger.add(nil, format_hash(hash)) if unstructured_logger
     hash = hash.merge(context)
     hash[:timestamp] ||= Time.now.utc
-    json_logger.add(nil, ActiveSupport::JSON.encode(hash))
+    json_logger.add(nil, MultiJson.encode(hash))
   end
 
   def thread_key
