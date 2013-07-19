@@ -1,5 +1,5 @@
 require 'logger'
-require 'active_support/json/encoding'
+require 'active_support/json'
 
 class StructuredEventLogger
   
@@ -59,7 +59,7 @@ class StructuredEventLogger
     unstructured_logger.add(nil, format_hash(hash)) if unstructured_logger
     hash = hash.merge(context[thread_key]) if context[thread_key]
     hash[:timestamp] ||= Time.now.utc
-    json_logger.add(nil, hash.to_json)
+    json_logger.add(nil, ActiveSupport::JSON.encode(hash))
   end
 
   def thread_key
