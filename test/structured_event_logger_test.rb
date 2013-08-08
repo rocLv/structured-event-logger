@@ -9,7 +9,7 @@ class StructuredEventLoggerTest < Minitest::Test
     @unstructured_logger = Logger.new(@nonstructured_io = StringIO.new)
     @unstructured_logger.formatter = proc { |_, _, _, msg| "#{msg}\n" }
     @event_logger = StructuredEventLogger.new(@json_io, @unstructured_logger)
-    @time = Time.parse('2012-01-01')
+    @time = Time.parse('2012-01-01T05:00:00Z')
   end
 
   def test_should_log_msg_to_buffered_logger
@@ -50,10 +50,31 @@ class StructuredEventLoggerTest < Minitest::Test
     assert_equal "{\"request_id\":\"2\",\"event\":\"error\",\"scope\":\"render\",\"timestamp\":\"2012-01-01T05:00:00Z\"}\n", @json_io.string
   end
 
-  def test_should_clear_context    
+  def assert_event_contains_value(value, key)
+    @event_logger.event :some_scope, :some_event
+    assert_equal value, JSON.parse(@json_io.string)[key.to_s]
+  end
+
+  def test_default_context_gets_merged
+    @event_logger.default_context[:foo] = 42
+    assert_event_contains_value 42, :foo
+  end
+
+  def test_default_context_values_can_be_overriden
+    @event_logger.default_context[:foo] = 42
+    @event_logger.context[:foo] = 43
+    assert_event_contains_value 43, :foo
+  end
+
+  def test_default_context_gets_merged_again_after_clear
+    @event_logger.default_context[:foo] = 42
+    @event_logger.context.clear
+    assert_event_contains_value 42, :foo
+  end
+
+  def test_should_clear_context
     Timecop.travel(@time) do
-      
-      Thread.new do 
+      Thread.new do
         @event_logger.context[:request_id] = '1'
         @event_logger.event :render, :in_thread
         @event_logger.context.clear
