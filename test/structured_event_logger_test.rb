@@ -9,7 +9,7 @@ class StructuredEventLoggerTest < Minitest::Test
     @unstructured_logger = Logger.new(@nonstructured_io = StringIO.new)
     @unstructured_logger.formatter = proc { |_, _, _, msg| "#{msg}\n" }
     @event_logger = StructuredEventLogger.new(@json_io, @unstructured_logger)
-    @time = Time.parse('2012-01-01')
+    @time = Time.parse('2012-01-01T05:00:00Z')
   end
 
   def test_should_log_msg_to_buffered_logger
