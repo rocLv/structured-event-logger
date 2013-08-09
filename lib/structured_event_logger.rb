@@ -71,7 +71,7 @@ class StructuredEventLogger
     unstructured_logger.add(nil, format_hash(scope, event, hash)) if unstructured_logger
 
     hash = hash.merge(@default_context.merge(context)).merge(event: event, scope: scope)
-    hash = { timestamp: Time.now.utc, event_id: SecureRandom.uuid }.merge(hash)
+    hash = { timestamp: Time.now.utc, event_uuid: SecureRandom.uuid }.merge(hash)
     json_io.write("#{MultiJson.encode(hash)}\n")
   end
 
