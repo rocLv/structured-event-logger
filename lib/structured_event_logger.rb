@@ -1,4 +1,5 @@
 require 'logger'
+require 'securerandom'
 require 'active_support/json'
 require 'active_support/log_subscriber'
 
@@ -69,8 +70,8 @@ class StructuredEventLogger
   def log_event(scope, event, hash)
     unstructured_logger.add(nil, format_hash(scope, event, hash)) if unstructured_logger
 
-    hash = hash.merge(@default_context.merge(context))
-    hash.update(event: event, scope: scope, timestamp: Time.now.utc)
+    hash = hash.merge(@default_context.merge(context)).merge(event: event, scope: scope)
+    hash = { timestamp: Time.now.utc, event_id: SecureRandom.uuid }.merge(hash)
     json_io.write("#{MultiJson.encode(hash)}\n")
   end
 
