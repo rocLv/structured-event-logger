@@ -31,20 +31,20 @@ class StructuredEventLoggerTest < Minitest::Test
   def test_default_json_properties
     @event_logger.event :render, :error
 
-    assert_last_event_contains_value 'render', :scope
-    assert_last_event_contains_value 'error', :event
+    assert_last_event_contains_value 'render', :event_scope
+    assert_last_event_contains_value 'error', :event_name
     assert_last_event_contains_value 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee', :event_uuid
-    assert_last_event_contains_value '2012-01-01T05:00:00Z', :timestamp
+    assert_last_event_contains_value '2012-01-01T05:00:00Z', :event_timestamp
   end
 
   def test_overwriting_default_properties
-    @event_logger.event :original, :original, :scope => 'overwritten', :event => 'original',
-            :timestamp => Time.parse('1912-01-01T04:00:00Z'), :event_uuid => 'overwritten'
+    @event_logger.event :original, :original, :event_scope => 'overwritten', :event_name => 'overwritten',
+            :event_timestamp => Time.parse('1912-01-01T04:00:00Z'), :event_uuid => 'overwritten'
 
-    assert_last_event_contains_value 'original', :scope
-    assert_last_event_contains_value 'original', :event
-    assert_last_event_contains_value 'overwritten', :event_uuid
-    assert_last_event_contains_value '1912-01-01T04:00:00Z', :timestamp
+    assert_last_event_contains_value 'original', :event_scope
+    assert_last_event_contains_value 'original', :event_name
+    assert_last_event_contains_value 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee', :event_uuid
+    assert_last_event_contains_value '1912-01-01T04:00:00Z', :event_timestamp
   end
 
   def test_should_log_flatten_hash
