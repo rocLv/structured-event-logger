@@ -36,6 +36,18 @@ Or install it yourself as:
     # later, while processing a request inside that filter
     event_logger.event('scope', 'event', other_value: 'blah') # will also include { my_value: 'whatever' }
 
+## Fields
+
+The default event fields that this library sets are prefixed with `event_`:
+
+- `event_scope`: scope of the event, the first parameter to the `event` call.
+- `event_name`: name of the event, the second parameter to the `event` call.
+- `event_uuid`: A unique identifier for the event generated using `SecureRandom.uuid`.
+- `event_timestamp`: The timestamp of the event, set to `Time.now.utc`.
+
+All these fields can be overriden by passing new values to the context hash, i.e. the
+third parameter to the `event` call.
+
 ## Contributing
 
 1. Fork it
