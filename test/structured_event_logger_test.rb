@@ -37,14 +37,25 @@ class StructuredEventLoggerTest < Minitest::Test
     assert_last_event_contains_value '2012-01-01T05:00:00Z', :event_timestamp
   end
 
-  def test_overwriting_default_properties
+  def test_overwriting_default_properties_using_hash
     @event_logger.event :original, :original, :event_scope => 'overwritten', :event_name => 'overwritten',
             :event_timestamp => Time.parse('1912-01-01T04:00:00Z'), :event_uuid => 'overwritten'
 
+    assert_last_event_contains_value 'overwritten', :event_scope
+    assert_last_event_contains_value 'overwritten', :event_name
+    assert_last_event_contains_value 'overwritten', :event_uuid
+    assert_last_event_contains_value '1912-01-01T04:00:00Z', :event_timestamp
+  end
+
+  def test_overwriting_default_properties_using_context
+    @event_logger.default_context[:event_name] = 'overwritten'
+    Thread.new do
+      @event_logger.context[:event_scope] = 'overwritten'
+      @event_logger.event :original, :original
+    end.join
+
     assert_last_event_contains_value 'original', :event_scope
     assert_last_event_contains_value 'original', :event_name
-    assert_last_event_contains_value 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee', :event_uuid
-    assert_last_event_contains_value '1912-01-01T04:00:00Z', :event_timestamp
   end
 
   def test_should_log_flatten_hash
