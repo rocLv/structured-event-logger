@@ -10,6 +10,6 @@ class StructuredEventLogger::JsonEndpoint
   end
 
   def log_event(scope, event, hash, record)
-    io.write("#{MultiJson.encode(record)}\n")    
+    io.write(MultiJson.encode(record) + "\n")
   end
 end
