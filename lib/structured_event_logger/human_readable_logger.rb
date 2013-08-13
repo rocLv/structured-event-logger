@@ -1,6 +1,6 @@
 require 'active_support/log_subscriber'
 
-class StructuredEventLogger::HumanReadableLoggerEndpoint
+class StructuredEventLogger::HumanReadableLogger
 
   CLEAR   = "\e[0m"
   BOLD    = "\e[1m"
@@ -35,10 +35,6 @@ class StructuredEventLogger::HumanReadableLoggerEndpoint
 
   def escape(value)
     output = value.to_s
-    if output =~ /[\s"\\]/
-      '"' + output.gsub('\\', '\\\\\\').gsub('"', '\\"') + '"'
-    else
-      output
-    end
+    output =~ /[\s"\\]/ ? output.inspect : output
   end
 end

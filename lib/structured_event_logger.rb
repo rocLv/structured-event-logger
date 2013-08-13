@@ -3,11 +3,8 @@ require 'securerandom'
 class StructuredEventLogger
   attr_reader :endpoints, :default_context
 
-  def initialize(json_io = nil, unstructured_logger = nil)
-    @endpoints = []
-
-    @endpoints << StructuredEventLogger::JsonEndpoint.new(json_io) if json_io
-    @endpoints << StructuredEventLogger::HumanReadableLoggerEndpoint.new(unstructured_logger) if unstructured_logger
+  def initialize(endpoints = [])
+    @endpoints = endpoints
 
     @thread_contexts = {}
     @default_context = {}
@@ -19,6 +16,14 @@ class StructuredEventLogger
 
   def context
     @thread_contexts[thread_key] ||= {}
+  end
+
+  def self.json_writer(*params)
+    StructuredEventLogger::JsonWriter.new(*params)
+  end
+
+  def self.human_readable_logger(*params)
+    StructuredEventLogger::HumanReadableLogger.new(*params)
   end
 
   private
@@ -45,7 +50,7 @@ class StructuredEventLogger
       begin
         endpoint.log_event(scope, event, hash, record)
       rescue => e
-        # noop
+        $stderr.write("Failed to submit event #{scope}/#{event} to #{endpoint.inspect}: #{e.message}.")
       end
     end
   end
@@ -55,5 +60,5 @@ class StructuredEventLogger
   end
 end
 
-require 'structured_event_logger/json_endpoint'
-require 'structured_event_logger/human_readable_logger_endpoint'
+require 'structured_event_logger/json_writer'
+require 'structured_event_logger/human_readable_logger'

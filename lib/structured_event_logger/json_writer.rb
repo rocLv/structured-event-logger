@@ -1,7 +1,7 @@
 require 'multi_json'
 require 'active_support/json'
 
-class StructuredEventLogger::JsonEndpoint
+class StructuredEventLogger::JsonWriter
 
   attr_reader :io
 
