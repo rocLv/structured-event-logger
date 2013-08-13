@@ -14,12 +14,6 @@ class StructuredEventLoggerTest < Minitest::Test
     SecureRandom.stubs(:uuid).returns('aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee')
   end
 
-  def test_should_log_msg_to_buffered_logger
-    @event_logger.log "a message"
-    assert_equal "a message\n", @nonstructured_io.string
-    assert @json_io.string.empty?
-  end
-
   def test_should_log_event_to_both_loggers
     @event_logger.event "render", "error", {:status => "status", :message => "message"}
 
