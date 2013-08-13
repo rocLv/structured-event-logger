@@ -1,14 +1,6 @@
 require 'securerandom'
 
 class StructuredEventLogger
-  CLEAR   = "\e[0m"
-  BOLD    = "\e[1m"
-
-  # Colors
-  MAGENTA = "\e[35m"
-  CYAN    = "\e[36m"
-  WHITE   = "\e[37m"
-
   attr_reader :endpoints, :default_context
 
   def initialize(json_io = nil, unstructured_logger = nil)

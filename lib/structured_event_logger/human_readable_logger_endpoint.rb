@@ -2,6 +2,14 @@ require 'active_support/log_subscriber'
 
 class StructuredEventLogger::HumanReadableLoggerEndpoint
 
+  CLEAR   = "\e[0m"
+  BOLD    = "\e[1m"
+
+  # Colors
+  MAGENTA = "\e[35m"
+  CYAN    = "\e[36m"
+  WHITE   = "\e[37m"
+   
   attr_accessor :logger, :colorize, :log_level
 
   def initialize(logger, colorize = ActiveSupport::LogSubscriber.colorize_logging, log_level = nil)
