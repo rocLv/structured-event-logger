@@ -9,8 +9,8 @@ class StructuredEventLoggerTest < Minitest::Test
     @unstructured_logger.formatter = proc { |_, _, _, msg| "#{msg}\n" }
     
     @event_logger = StructuredEventLogger.new([
-      StructuredEventLogger.json_writer(@json_io = StringIO.new),
-      StructuredEventLogger.human_readable_logger(@unstructured_logger),
+      StructuredEventLogger::HumanReadableLogger.new(@unstructured_logger),
+      StructuredEventLogger::JsonWriter.new(@json_io = StringIO.new)
     ])
     
     Time.stubs(:now).returns(Time.parse('2012-01-01T05:00:00Z'))

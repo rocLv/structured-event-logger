@@ -18,14 +18,6 @@ class StructuredEventLogger
     @thread_contexts[thread_key] ||= {}
   end
 
-  def self.json_writer(*params)
-    StructuredEventLogger::JsonWriter.new(*params)
-  end
-
-  def self.human_readable_logger(*params)
-    StructuredEventLogger::HumanReadableLogger.new(*params)
-  end
-
   private
 
   def flatten_hash(hash, keys = nil, separator = "_")
