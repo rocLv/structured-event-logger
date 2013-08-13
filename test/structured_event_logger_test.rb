@@ -4,20 +4,17 @@ require 'stringio'
 class StructuredEventLoggerTest < Minitest::Test
   def setup
     ActiveSupport::LogSubscriber.colorize_logging = false
-
-    @json_io = StringIO.new
+    
     @unstructured_logger = Logger.new(@nonstructured_io = StringIO.new)
     @unstructured_logger.formatter = proc { |_, _, _, msg| "#{msg}\n" }
-    @event_logger = StructuredEventLogger.new(@json_io, @unstructured_logger)
+    
+    @event_logger = StructuredEventLogger.new([
+      StructuredEventLogger::HumanReadableLogger.new(@unstructured_logger),
+      StructuredEventLogger::JsonWriter.new(@json_io = StringIO.new)
+    ])
     
     Time.stubs(:now).returns(Time.parse('2012-01-01T05:00:00Z'))
     SecureRandom.stubs(:uuid).returns('aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee')
-  end
-
-  def test_should_log_msg_to_buffered_logger
-    @event_logger.log "a message"
-    assert_equal "a message\n", @nonstructured_io.string
-    assert @json_io.string.empty?
   end
 
   def test_should_log_event_to_both_loggers

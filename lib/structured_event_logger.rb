@@ -1,28 +1,13 @@
-require 'logger'
 require 'securerandom'
-require 'active_support/json'
-require 'active_support/log_subscriber'
 
 class StructuredEventLogger
-  CLEAR   = "\e[0m"
-  BOLD    = "\e[1m"
+  attr_reader :endpoints, :default_context
 
-  # Colors
-  MAGENTA = "\e[35m"
-  CYAN    = "\e[36m"
-  WHITE   = "\e[37m"
+  def initialize(endpoints = [])
+    @endpoints = endpoints
 
-  attr_reader :json_io, :unstructured_logger, :colorize_logging, :default_context
-
-  def initialize(json_io, unstructured_logger = nil)
-    @json_io, @unstructured_logger = json_io, unstructured_logger
     @thread_contexts = {}
     @default_context = {}
-    @colorize_logging = ActiveSupport::LogSubscriber.colorize_logging
-  end
-
-  def log(msg = nil)
-    unstructured_logger.add(nil, msg)
   end
 
   def event(scope, event, content = {})
@@ -34,25 +19,6 @@ class StructuredEventLogger
   end
 
   private
-
-  def format_hash(scope, event, hash, separator = ', ')
-    @odd = !@odd
-    message = hash.map {|k, v| "#{k}=#{escape(v)}"}.join(separator)
-    if @colorize_logging
-      "  #{@odd ? CYAN : MAGENTA}#{BOLD}[#{scope}] #{event}: #{WHITE}#{message}#{CLEAR}"
-    else
-      "  [#{scope}] #{event}: #{message}"
-    end
-  end
-
-  def escape(value)
-    output = value.to_s
-    if output =~ /[\s"\\]/
-      '"' + output.gsub('\\', '\\\\\\').gsub('"', '\\"') + '"'
-    else
-      output
-    end
-  end
 
   def flatten_hash(hash, keys = nil, separator = "_")
     flat_hash = {}
@@ -68,15 +34,23 @@ class StructuredEventLogger
   end
 
   def log_event(scope, event, hash)
-    unstructured_logger.add(nil, format_hash(scope, event, hash)) if unstructured_logger
-
     record = @default_context.merge(context)
     record.update(event_name: event, event_scope: scope, event_uuid: SecureRandom.uuid, event_timestamp: Time.now.utc)
     record.update(hash)
-    json_io.write("#{MultiJson.encode(record)}\n")
+
+    endpoints.each do |endpoint|
+      begin
+        endpoint.log_event(scope, event, hash, record)
+      rescue => e
+        $stderr.write("Failed to submit event #{scope}/#{event} to #{endpoint.inspect}: #{e.message}.\n")
+      end
+    end
   end
 
   def thread_key
     Thread.current
   end
 end
+
+require 'structured_event_logger/json_writer'
+require 'structured_event_logger/human_readable_logger'

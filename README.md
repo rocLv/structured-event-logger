@@ -1,6 +1,7 @@
 # StructuredEventLogger
 
-Structured event logger that writes events to both a human readable log and a JSON formatted log
+Structured event logger that submits events to a list of listeners, including
+human readable logs, json formatted event streams, and other endpoints.
 
 ## Installation
 
@@ -18,10 +19,13 @@ Or install it yourself as:
 
 ## Usage
 
-    # Creating an instance
-    json_logger = File.open(Rails.root.join("log", "event.log"), "a")
-    human_readable_logger = Rails.logger
-    event_logger = StructuredEventLogger.new(json_logger, human_readable_logger)
+    # Creating an instance of a StructuredEventLogger with several endpoints.
+    # The listeners provided to the constructors should respond to #log_event.
+    json_io = File.open(Rails.root.join("log", "event.log"), "a")
+    event_logger = StructuredEventLogger.new([
+        StructuredEventLogger::HumanReadableLogger.new(Rails.logger),
+        StructuredEventLogger::JsonWriter.new(json_io)
+    ])
 
     # Basic usage
     event_logger.event('scope', event, field: 'value', other_field: 'other value')
