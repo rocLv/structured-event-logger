@@ -9,7 +9,7 @@ class StructuredEventLogger::JsonWriter
     @io = io
   end
 
-  def log_event(scope, event, hash, record)
+  def call(scope, event, hash, record)
     io.write(MultiJson.encode(record) + "\n")
   end
 end

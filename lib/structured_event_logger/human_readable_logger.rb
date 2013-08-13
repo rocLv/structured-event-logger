@@ -17,7 +17,7 @@ class StructuredEventLogger::HumanReadableLogger
   end
 
 
-  def log_event(scope, event, hash, decorated_hash)
+  def call(scope, event, hash, decorated_hash)
     logger.add(log_level, format_hash(scope, event, hash))
   end
 
