@@ -50,7 +50,7 @@ class StructuredEventLogger
       begin
         endpoint.log_event(scope, event, hash, record)
       rescue => e
-        $stderr.write("Failed to submit event #{scope}/#{event} to #{endpoint.inspect}: #{e.message}.")
+        $stderr.write("Failed to submit event #{scope}/#{event} to #{endpoint.inspect}: #{e.message}.\n")
       end
     end
   end
