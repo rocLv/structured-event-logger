@@ -8,21 +8,25 @@ class StructuredEventLogger
     attr_reader :name, :wrapped_exception
     def initialize(name, wrapped_exception)
       @name, @wrapped_exception = name, wrapped_exception
-      super("Endpoint #{name} failed: #{exception.message}")
+      super("Endpoint #{name} failed - #{wrapped_exception.class.name}: #{wrapped_exception.message}")
     end
   end
 
   attr_reader :endpoints, :default_context
+  attr_accessor :error_handler
 
   def initialize(endpoints = {})
     @endpoints = endpoints
 
     @thread_contexts = {}
     @default_context = {}
+    @error_handler = lambda { |exception| raise(exception) }
   end
 
   def event(scope, event, content = {})
     log_event scope, event, flatten_hash(content)
+  rescue EndpointException => e
+    error_handler.call(e)
   end
 
   def context
@@ -63,5 +67,6 @@ class StructuredEventLogger
   end
 end
 
+require 'structured_event_logger/syslogger'
 require 'structured_event_logger/json_writer'
 require 'structured_event_logger/human_readable_logger'
