@@ -22,10 +22,10 @@ Or install it yourself as:
     # Creating an instance of a StructuredEventLogger with several endpoints.
     # The listeners provided to the constructors should respond to #log_event.
     json_io = File.open(Rails.root.join("log", "event.log"), "a")
-    event_logger = StructuredEventLogger.new([
-        StructuredEventLogger::HumanReadableLogger.new(Rails.logger),
-        StructuredEventLogger::JsonWriter.new(json_io)
-    ])
+    event_logger = StructuredEventLogger.new(
+        logger: StructuredEventLogger::HumanReadableLogger.new(Rails.logger),
+        json:   StructuredEventLogger::JsonWriter.new(json_io)
+    )
 
     # Basic usage
     event_logger.event('scope', event, field: 'value', other_field: 'other value')
