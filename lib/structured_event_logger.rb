@@ -63,5 +63,6 @@ class StructuredEventLogger
   end
 end
 
+require 'structured_event_logger/syslogger'
 require 'structured_event_logger/json_writer'
 require 'structured_event_logger/human_readable_logger'

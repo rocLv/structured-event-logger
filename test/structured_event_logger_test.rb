@@ -15,6 +15,11 @@ class StructuredEventLoggerTest < Minitest::Test
     
     Time.stubs(:now).returns(Time.parse('2012-01-01T05:00:00Z'))
     SecureRandom.stubs(:uuid).returns('aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee')
+    Syslog.open('test_structured_event_logger') unless Syslog.opened?
+  end
+
+  def teardown
+    Syslog.close
   end
 
   def test_should_log_event_to_both_loggers
@@ -116,6 +121,29 @@ class StructuredEventLoggerTest < Minitest::Test
     @event_logger.endpoints[:failer] = lambda { raise "FAIL" }
     assert_raises(StructuredEventLogger::EndpointException) do
       @event_logger.event(:test, :fail)
+    end
+  end
+
+  def test_should_submit_events_to_syslog
+    Syslog.expects(:log).with do |log_level, format_string, argument|
+      event_data = JSON.parse(argument)
+      assert_equal Syslog::LOG_INFO, log_level
+      assert_equal '%s', format_string
+      assert_equal 'test', event_data['event_scope']
+      assert_equal 'syslog', event_data['event_name']
+      assert_equal 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee', event_data['event_uuid']
+      assert_equal '2012-01-01T05:00:00Z', event_data['event_timestamp']
+      assert_equal 'test', event_data['message']
+    end
+
+    @event_logger.endpoints[:syslog] = StructuredEventLogger::Syslogger.new
+    @event_logger.event(:test, :syslog, message: 'test')
+  end
+
+  def test_should_fail_when_syslog_message_is_too_large
+    @event_logger.endpoints[:syslog] = StructuredEventLogger::Syslogger.new
+    assert_raises(StructuredEventLogger::EndpointException) do
+      @event_logger.event(:test, :syslog, message: 'a' * (64 * 1024 + 1))
     end
   end
 
