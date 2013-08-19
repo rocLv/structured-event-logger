@@ -3,7 +3,7 @@ require 'securerandom'
 class StructuredEventLogger
   attr_reader :endpoints, :default_context
 
-  def initialize(endpoints = [])
+  def initialize(endpoints = {})
     @endpoints = endpoints
 
     @thread_contexts = {}
@@ -38,11 +38,11 @@ class StructuredEventLogger
     record.update(event_name: event, event_scope: scope, event_uuid: SecureRandom.uuid, event_timestamp: Time.now.utc)
     record.update(hash)
 
-    endpoints.each do |endpoint|
+    endpoints.each do |name, endpoint|
       begin
         endpoint.call(scope, event, hash, record)
       rescue => e
-        $stderr.write("Failed to submit event #{scope}/#{event} to #{endpoint.inspect}: #{e.message}.\n")
+        $stderr.write("Failed to submit event #{scope}/#{event} to #{name} endpoint: #{e.message}.\n")
       end
     end
   end
