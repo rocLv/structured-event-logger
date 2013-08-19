@@ -112,6 +112,13 @@ class StructuredEventLoggerTest < Minitest::Test
     assert_last_event_does_not_contain :request_id
   end
 
+  def test_should_raise_exception_when_endpoint_fails
+    @event_logger.endpoints[:failer] = lambda { raise "FAIL" }
+    assert_raises(StructuredEventLogger::EndpointException) do
+      @event_logger.event(:test, :fail)
+    end
+  end
+
   private 
 
   def assert_last_event_contains_value(value, key)
