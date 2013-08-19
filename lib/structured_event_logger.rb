@@ -1,6 +1,17 @@
 require 'securerandom'
 
 class StructuredEventLogger
+
+  class Error < ::StandardError; end
+
+  class EndpointException < StructuredEventLogger::Error
+    attr_reader :name, :wrapped_exception
+    def initialize(name, wrapped_exception)
+      @name, @wrapped_exception = name, wrapped_exception
+      super("Endpoint #{name} failed: #{exception.message}")
+    end
+  end
+
   attr_reader :endpoints, :default_context
 
   def initialize(endpoints = {})
@@ -42,7 +53,7 @@ class StructuredEventLogger
       begin
         endpoint.call(scope, event, hash, record)
       rescue => e
-        $stderr.write("Failed to submit event #{scope}/#{event} to #{name} endpoint: #{e.message}.\n")
+        raise EndpointException.new(name, e)
       end
     end
   end
