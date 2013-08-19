@@ -1,3 +1,4 @@
+require 'multi_json'
 require 'active_support/json'
 require 'syslog'
 
