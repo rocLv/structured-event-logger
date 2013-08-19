@@ -117,13 +117,6 @@ class StructuredEventLoggerTest < Minitest::Test
     assert_last_event_does_not_contain :request_id
   end
 
-  def test_should_raise_exception_when_endpoint_fails
-    @event_logger.endpoints[:failer] = lambda { raise "FAIL" }
-    assert_raises(StructuredEventLogger::EndpointException) do
-      @event_logger.event(:test, :fail)
-    end
-  end
-
   def test_should_submit_events_to_syslog
     Syslog.expects(:log).with do |log_level, format_string, argument|
       event_data = JSON.parse(argument)
@@ -146,6 +139,24 @@ class StructuredEventLoggerTest < Minitest::Test
       @event_logger.event(:test, :syslog, message: 'a' * (64 * 1024 + 1))
     end
   end
+
+  def test_should_execute_a_custom_error_handler_on_failure
+    @event_logger.endpoints[:failer] = proc { raise "FAIL" }
+    @event_logger.error_handler = mock()
+    @event_logger.error_handler.expects(:call).with do |exception|
+      assert_kind_of StructuredEventLogger::EndpointException, exception
+      assert_equal 'FAIL', exception.wrapped_exception.message
+      assert_equal 'Endpoint failer failed - RuntimeError: FAIL', exception.message
+    end
+    @event_logger.event(:test, :fail)
+  end
+
+  def test_should_raise_exception_when_endpoint_fails
+    @event_logger.endpoints[:failer] = proc { raise "FAIL" }
+    assert_raises(StructuredEventLogger::EndpointException) do
+      @event_logger.event(:test, :fail)
+    end
+  end  
 
   private 
 
