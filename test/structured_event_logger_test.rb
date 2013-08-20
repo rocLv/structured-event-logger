@@ -135,28 +135,32 @@ class StructuredEventLoggerTest < Minitest::Test
 
   def test_should_fail_when_syslog_message_is_too_large
     @event_logger.endpoints[:syslog] = StructuredEventLogger::Syslogger.new
-    assert_raises(StructuredEventLogger::EndpointException) do
+    assert_raises(StructuredEventLogger::EventHandlingException) do
       @event_logger.event(:test, :syslog, message: 'a' * (64 * 1024 + 1))
     end
   end
 
-  def test_should_execute_a_custom_error_handler_on_failure
+  def test_should_raise_exception_when_endpoint_fails
     @event_logger.endpoints[:failer] = proc { raise "FAIL" }
+    assert_raises(StructuredEventLogger::EventHandlingException) do
+      @event_logger.event(:test, :fail)
+    end
+  end  
+
+  def test_should_execute_a_custom_error_handler_on_failure
+    @event_logger.endpoints[:failer1] = proc { raise "FAIL" }
+    @event_logger.endpoints[:failer2] = proc { raise "FAIL" }
     @event_logger.error_handler = mock()
     @event_logger.error_handler.expects(:call).with do |exception|
-      assert_kind_of StructuredEventLogger::EndpointException, exception
-      assert_equal 'FAIL', exception.wrapped_exception.message
-      assert_equal 'Endpoint failer failed - RuntimeError: FAIL', exception.message
+      assert_kind_of StructuredEventLogger::EventHandlingException, exception
+      assert_equal 'Failed to submit the test/fail event to the following endpoints: failer1, failer2', exception.message
+      assert_equal 2, exception.exceptions.size
+      assert_equal 'FAIL', exception.exceptions[:failer1].message
+      assert_kind_of RuntimeError, exception.exceptions[:failer2]
     end
     @event_logger.event(:test, :fail)
   end
 
-  def test_should_raise_exception_when_endpoint_fails
-    @event_logger.endpoints[:failer] = proc { raise "FAIL" }
-    assert_raises(StructuredEventLogger::EndpointException) do
-      @event_logger.event(:test, :fail)
-    end
-  end  
 
   private 
 
