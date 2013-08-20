@@ -4,11 +4,11 @@ class StructuredEventLogger
 
   class Error < ::StandardError; end
 
-  class EndpointException < StructuredEventLogger::Error
-    attr_reader :name, :wrapped_exception
-    def initialize(name, wrapped_exception)
-      @name, @wrapped_exception = name, wrapped_exception
-      super("Endpoint #{name} failed - #{wrapped_exception.class.name}: #{wrapped_exception.message}")
+  class EventHandlingException < StructuredEventLogger::Error
+    attr_reader :exceptions
+    def initialize(scope, name, exceptions)
+      @scope, @name, @exceptions = scope, name, exceptions
+      super("Failed to submit the #{scope}/#{name} event to the following endpoints: #{exceptions.keys.join(", ")}")
     end
   end
 
@@ -25,7 +25,7 @@ class StructuredEventLogger
 
   def event(scope, event, content = {})
     log_event scope, event, flatten_hash(content)
-  rescue EndpointException => e
+  rescue EventHandlingException => e
     error_handler.call(e)
   end
 
@@ -53,13 +53,16 @@ class StructuredEventLogger
     record.update(event_name: event, event_scope: scope, event_uuid: SecureRandom.uuid, event_timestamp: Time.now.utc)
     record.update(hash)
 
+    exceptions = {}
     endpoints.each do |name, endpoint|
       begin
         endpoint.call(scope, event, hash, record)
       rescue => e
-        raise EndpointException.new(name, e)
+        exceptions[name] = e
       end
     end
+
+    raise EventHandlingException.new(scope, event, exceptions) unless exceptions.empty?
   end
 
   def thread_key
