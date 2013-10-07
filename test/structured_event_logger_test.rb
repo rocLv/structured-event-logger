@@ -4,15 +4,15 @@ require 'stringio'
 class StructuredEventLoggerTest < Minitest::Test
   def setup
     ActiveSupport::LogSubscriber.colorize_logging = false
-    
+
     @unstructured_logger = Logger.new(@nonstructured_io = StringIO.new)
     @unstructured_logger.formatter = proc { |_, _, _, msg| "#{msg}\n" }
-    
+
     @event_logger = StructuredEventLogger.new(
       logger: StructuredEventLogger::HumanReadableLogger.new(@unstructured_logger),
       json:   StructuredEventLogger::JsonWriter.new(@json_io = StringIO.new)
     )
-    
+
     Time.stubs(:now).returns(Time.parse('2012-01-01T05:00:00Z'))
     SecureRandom.stubs(:uuid).returns('aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee')
     Syslog.open('test_structured_event_logger') unless Syslog.opened?
@@ -145,7 +145,7 @@ class StructuredEventLoggerTest < Minitest::Test
     assert_raises(StructuredEventLogger::EventHandlingException) do
       @event_logger.event(:test, :fail)
     end
-  end  
+  end
 
   def test_should_execute_a_custom_error_handler_on_failure
     @event_logger.endpoints[:failer1] = proc { raise "FAIL" }
@@ -161,8 +161,21 @@ class StructuredEventLoggerTest < Minitest::Test
     @event_logger.event(:test, :fail)
   end
 
+  def test_only_if
+    @event_logger.only_if = lambda { |*args| return false }
+    @event_logger.event(:dont_do_it, :foobar)
+    assert_nil last_event
 
-  private 
+    @event_logger.only_if = lambda{ |scope, event, content| scope == :do_it }
+    @event_logger.event(:dont_do_it, :foobar)
+    assert_nil last_event
+
+    @event_logger.only_if = lambda{ |scope, event, content| scope == :do_it }
+    @event_logger.event(:do_it, :foobar)
+    assert_last_event_contains_value "do_it", "event_scope"
+  end
+
+  private
 
   def assert_last_event_contains_value(value, key)
     assert_equal value, last_parsed_event[key.to_s]
@@ -172,7 +185,11 @@ class StructuredEventLoggerTest < Minitest::Test
     assert !last_parsed_event.has_key?(key.to_s)
   end
 
+  def last_event
+    @json_io.string.lines.entries[-1]
+  end
+
   def last_parsed_event
-    JSON.parse(@json_io.string.lines.entries[-1])
+    JSON.parse(last_event)
   end
 end
