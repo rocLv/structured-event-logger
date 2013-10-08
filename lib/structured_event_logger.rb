@@ -13,6 +13,8 @@ class StructuredEventLogger
   end
 
   attr_reader :endpoints, :default_context
+
+  attr_accessor :only_if
   attr_accessor :error_handler
 
   def initialize(endpoints = {})
@@ -20,10 +22,12 @@ class StructuredEventLogger
 
     @thread_contexts = {}
     @default_context = {}
+
     @error_handler = lambda { |exception| raise(exception) }
   end
 
   def event(scope, event, content = {})
+    return unless @only_if.nil? || @only_if.call(scope, event, content)
     log_event scope, event, flatten_hash(content)
   rescue EventHandlingException => e
     error_handler.call(e)
