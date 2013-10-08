@@ -70,10 +70,10 @@ class StructuredEventLoggerTest < Minitest::Test
   end
 
   def test_should_log_to_current_context
-    Thread.new do 
+    Thread.new do
       @event_logger.context[:request_id] = '1'
 
-      Thread.new do 
+      Thread.new do
         @event_logger.context[:request_id] = '2'
         @event_logger.event :render, :error
       end.join
@@ -161,16 +161,16 @@ class StructuredEventLoggerTest < Minitest::Test
     @event_logger.event(:test, :fail)
   end
 
-  def test_only_if
-    @event_logger.only_if = lambda { |*args| return false }
+  def test_only
+    @event_logger.only = lambda { |*args| return false }
     @event_logger.event(:dont_do_it, :foobar)
     assert_nil last_event
 
-    @event_logger.only_if = lambda{ |scope, event, content| scope == :do_it }
+    @event_logger.only = lambda{ |scope, event, content| scope == :do_it }
     @event_logger.event(:dont_do_it, :foobar)
     assert_nil last_event
 
-    @event_logger.only_if = lambda{ |scope, event, content| scope == :do_it }
+    @event_logger.only = lambda{ |scope, event, content| scope == :do_it }
     @event_logger.event(:do_it, :foobar)
     assert_last_event_contains_value "do_it", "event_scope"
   end

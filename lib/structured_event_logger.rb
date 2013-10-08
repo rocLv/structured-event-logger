@@ -14,7 +14,7 @@ class StructuredEventLogger
 
   attr_reader :endpoints, :default_context
 
-  attr_accessor :only_if
+  attr_accessor :only
   attr_accessor :error_handler
 
   def initialize(endpoints = {})
@@ -27,7 +27,7 @@ class StructuredEventLogger
   end
 
   def event(scope, event, content = {})
-    return unless @only_if.nil? || @only_if.call(scope, event, content)
+    return unless @only.nil? || @only.call(scope, event, content)
     log_event scope, event, flatten_hash(content)
   rescue EventHandlingException => e
     error_handler.call(e)
