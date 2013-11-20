@@ -23,11 +23,17 @@ class StructuredEventLoggerTest < Minitest::Test
   end
 
   def test_should_log_event_to_both_loggers
-    @event_logger.event "render", "error", {:status => "status", :message => "message"}
-
+    @event_logger.event("render", "error", {:status => "status", :message => "message"})
     assert_equal "  [render] error: status=status, message=message\n", @nonstructured_io.string
     assert @json_io.string.end_with?("\n")
     assert_kind_of Hash, JSON.parse(@json_io.string)
+  end
+
+  def test_should_return_event
+    event = @event_logger.event("render", "error", {:status => "status", :message => "message"})
+    json = JSON.parse(@json_io.string)
+    event = JSON.load(JSON.dump(event))
+    assert_equal event, json
   end
 
   def test_default_json_properties
