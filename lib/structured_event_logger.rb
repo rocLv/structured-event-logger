@@ -67,6 +67,7 @@ class StructuredEventLogger
     end
 
     raise EventHandlingException.new(scope, event, exceptions) unless exceptions.empty?
+    record
   end
 
   def thread_key
