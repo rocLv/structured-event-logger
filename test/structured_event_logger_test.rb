@@ -156,7 +156,7 @@ class StructuredEventLoggerTest < Minitest::Test
   def test_should_execute_a_custom_error_handler_on_failure
     @event_logger.endpoints[:failer1] = proc { raise "FAIL" }
     @event_logger.endpoints[:failer2] = proc { raise "FAIL" }
-    @event_logger.error_handler = mock()
+    @event_logger.error_handler = mock('error handler')
     @event_logger.error_handler.expects(:call).with do |exception|
       assert_kind_of StructuredEventLogger::EventHandlingException, exception
       assert_equal 'Failed to submit the test/fail event to the following endpoints: failer1, failer2', exception.message
