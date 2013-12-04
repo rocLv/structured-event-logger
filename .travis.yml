@@ -6,6 +6,9 @@ rvm:
   - ruby-head
   - rbx
   - jruby-19mode
+env:
+  - "AS_VERSION=3.2.16"
+  - "AS_VERSION=4.0.2"
 matrix:
   allow_failures:
     - rvm: ruby-head

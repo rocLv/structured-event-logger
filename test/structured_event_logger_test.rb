@@ -1,7 +1,7 @@
 require 'test_helper'
 require 'stringio'
 
-class StructuredEventLoggerTest < Minitest::Test
+class StructuredEventLoggerTest < MiniTest::Unit::TestCase
   def setup
     ActiveSupport::LogSubscriber.colorize_logging = false
 
