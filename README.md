@@ -1,5 +1,7 @@
 # StructuredEventLogger
 
+[![Build Status](https://travis-ci.org/Shopify/structured-event-logger.png?branch=master)](https://travis-ci.org/Shopify/structured-event-logger)
+
 Structured event logger that submits events to a list of listeners, including
 human readable logs, json formatted event streams, and other endpoints.
 
