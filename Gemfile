@@ -1,4 +1,7 @@
 source 'https://rubygems.org'
-
-# Specify your gem's dependencies in structured-event-logger.gemspec
 gemspec
+
+platform :rbx do
+	gem "rubysl" 
+	gem "json"
+end
