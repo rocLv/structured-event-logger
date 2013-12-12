@@ -1,4 +1,3 @@
-require 'multi_json'
 require 'active_support/json'
 require 'syslog'
 
@@ -13,7 +12,7 @@ class StructuredEventLogger::Syslogger
   end
 
   def call(scope, event, hash, record)
-    message = MultiJson.encode(record)
+    message = ActiveSupport::JSON.encode(record)
     raise MessageExceedsMaximumSize, "Event too big to be submitted to syslog" if message.bytesize > max_size
     Syslog.log(log_level, '%s', message)
   end
