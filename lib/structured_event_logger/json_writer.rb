@@ -1,4 +1,3 @@
-require 'multi_json'
 require 'active_support/json'
 
 class StructuredEventLogger::JsonWriter
@@ -10,6 +9,6 @@ class StructuredEventLogger::JsonWriter
   end
 
   def call(scope, event, hash, record)
-    io.write(MultiJson.encode(record) + "\n")
+    io.write(ActiveSupport::JSON.encode(record) + "\n")
   end
 end
