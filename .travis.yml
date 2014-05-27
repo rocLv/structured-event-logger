@@ -4,7 +4,7 @@ rvm:
   - 1.9.3
   - 2.0.0
   - ruby-head
-  - rbx
+  - rbx-2
   - jruby-19mode
 env:
   - "AS_VERSION=3.2.16"
